@@ -1,18 +1,18 @@
-const express = require('express');
-const router = express.Router();
-const resultadoController = require('../controllers/resultado.controller');
+// src/routes/resultado.routes.js
+const express = require('express'); 
+const router = express.Router(); 
+const resultadoController = require('../controllers/resultado.controller'); 
+const verifyToken = require('../middleware/auth.middleware'); // <-- Importar
 
-// Endpoints para Máscaras de Agua
-router.get('/:id/mascara-agua/final', resultadoController.getFinalWaterMask);
-router.get('/:id/mascara-agua/alta-confianza', resultadoController.getHighConfidenceWaterMask);
-router.get('/:id/mascara-agua/jrc/estacional', resultadoController.getJRCSeasonalWaterMask);
-router.get('/:id/mascara-agua/jrc/permanente', resultadoController.getJRCPermanentWaterMask);
-router.get('/:id/mascara-agua/jrc/total', resultadoController.getJRCTotalWaterMask);
-
-// Endpoints para Redes Hidrográficas
-router.get('/:id/red-hidrografica/rios-principales', resultadoController.getPrincipalRiverNetwork);
-router.get('/:id/red-hidrografica/rios-medianos', resultadoController.getMediumRiverNetwork);
-router.get('/:id/red-hidrografica/rios-pequenos', resultadoController.getSmallRiverNetwork);
-router.get('/:id/red-hidrografica/quebradas', resultadoController.getRavineNetwork);
+// Rutas Protegidas
+router.get('/:id/mascara-agua/final', verifyToken, resultadoController.getFinalWaterMask); 
+router.get('/:id/mascara-agua/alta-confianza', verifyToken, resultadoController.getHighConfidenceWaterMask); 
+router.get('/:id/mascara-agua/jrc/estacional', verifyToken, resultadoController.getJRCSeasonalWaterMask); 
+router.get('/:id/mascara-agua/jrc/permanente', verifyToken, resultadoController.getJRCPermanentWaterMask); 
+router.get('/:id/mascara-agua/jrc/total', verifyToken, resultadoController.getJRCTotalWaterMask); 
+router.get('/:id/red-hidrografica/rios-principales', verifyToken, resultadoController.getPrincipalRiverNetwork); 
+router.get('/:id/red-hidrografica/rios-medianos', verifyToken, resultadoController.getMediumRiverNetwork); 
+router.get('/:id/red-hidrografica/rios-pequenos', verifyToken, resultadoController.getSmallRiverNetwork); 
+router.get('/:id/red-hidrografica/quebradas', verifyToken, resultadoController.getRavineNetwork); 
 
 module.exports = router;

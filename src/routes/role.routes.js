@@ -1,14 +1,15 @@
-const express = require('express');
-const router = express.Router();
-const roleController = require('../controllers/role.controller');
+// src/routes/role.routes.js
+const express = require('express'); 
+const router = express.Router(); 
+const roleController = require('../controllers/role.controller'); 
+const verifyToken = require('../middleware/auth.middleware'); // <-- Importar
 
-router.get('/', roleController.listRoles);
-router.post('/', roleController.createRole);
-router.get('/:id', roleController.getRoleById);
-router.put('/:id', roleController.updateRole);
-router.delete('/:id', roleController.deleteRole);
-
-// Endpoint para asignar un rol a un usuario
-router.post('/users/:id/assign_role', roleController.assignRoleToUser);
+// Rutas Protegidas (Idealmente solo accesibles por Admin/Usuarios con rol específico)
+router.get('/', verifyToken, roleController.listRoles); 
+router.post('/', verifyToken, roleController.createRole); 
+router.get('/:id', verifyToken, roleController.getRoleById); 
+router.put('/:id', verifyToken, roleController.updateRole); 
+router.delete('/:id', verifyToken, roleController.deleteRole); 
+router.post('/users/:id/assign_role', verifyToken, roleController.assignRoleToUser); 
 
 module.exports = router;
