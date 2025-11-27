@@ -1,6 +1,6 @@
 const db = require('../config/db.config');
 
-// Lógica de negocio para Proyectos
+
 exports.findAllProjects = async () => {
     const [rows] = await db.execute('SELECT * FROM proyectos');
     return rows;

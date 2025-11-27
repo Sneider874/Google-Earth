@@ -1,67 +1,93 @@
-// src/services/user.services.js
 const db = require('../config/db.config'); 
 
-// 1. Obtener todos los usuarios (Usada en GET /api/users)
+//  Obtener todos los usuarios (Usada en GET /api/users)
 exports.findAll = async () => { 
-    // No necesitamos la contraseña aquí
     const [rows] = await db.execute('SELECT idUsuario, nombre, correo, rol FROM usuario'); 
     return rows; 
 }; 
 
-// 2. Obtener usuario por ID (Usada en GET /api/users/:id)
-// ¡ESTA ES LA FUNCIÓN QUE FALTABA O ESTABA MAL NOMBRADA!
+//  Obtener usuario por ID (Usada en GET /api/users/:id)
 exports.findById = async (id) => { 
-    // No necesitamos la contraseña aquí
-    const [rows] = await db.execute('SELECT idUsuario, nombre, correo, rol FROM usuario WHERE idUsuario = ?', [id]); 
+    //  AGREGADO: imagenUrl
+    const [rows] = await db.execute('SELECT idUsuario, nombre, correo, rol, isPublic, imagenUrl FROM usuario WHERE idUsuario = ?', [id]); 
     return rows[0]; 
 }; 
 
-// 3. Crear usuario (Usada en POST /api/auth/register)
+//  Crear usuario (Usada en POST /api/auth/register)
 exports.create = async (newUser) => { 
-    // Asegúrate de que tu tabla tenga un DEFAULT 0 en isVerified,
-    // o inclúyelo explícitamente aquí si es necesario:
     const [result] = await db.execute( 
-        'INSERT INTO usuario (nombre, correo, rol, contrasena, isVerified) VALUES (?, ?, ?, ?, 0)', 
+        'INSERT INTO usuario (nombre, correo, rol, contrasena, isVerified, isPublic) VALUES (?, ?, ?, ?, 0, 0)', 
         [newUser.nombre, newUser.correo, newUser.rol, newUser.contrasena] 
     ); 
     return { id: result.insertId, ...newUser }; 
 }; 
 
-// 4. Actualizar usuario (Usada en PUT /api/users/:id)
+//  Actualizar usuario 
 exports.update = async (id, updatedUser) => { 
-    // Debes decidir si permites actualizar la contraseña en esta ruta
-    const [result] = await db.execute( 
-        'UPDATE usuario SET nombre = ?, correo = ?, rol = ? WHERE idUsuario = ?', 
-        [updatedUser.nombre, updatedUser.correo, updatedUser.rol, id] 
-    ); 
+    let query = 'UPDATE usuario SET nombre = ?, correo = ?';
+    let params = [updatedUser.nombre, updatedUser.correo];
+    
+    // Solo actualizar contraseña si se proporciona
+    if (updatedUser.contrasena) {
+        query += ', contrasena = ?';
+        params.push(updatedUser.contrasena);
+    }
+    
+    query += ' WHERE idUsuario = ?';
+    params.push(id);
+    
+    const [result] = await db.execute(query, params);
     return result.affectedRows > 0; 
 }; 
 
-// 5. Eliminar usuario (Usada en DELETE /api/users/:id)
+//  Eliminar usuario 
 exports.remove = async (id) => { 
     const [result] = await db.execute('DELETE FROM usuario WHERE idUsuario = ?', [id]); 
     return result.affectedRows > 0; 
 }; 
 
-// 6. Obtener usuario por Correo (Usada en POST /api/auth/login)
-// En src/services/user.services.js
-
+//  Obtener usuario por Correo 
 exports.findByEmail = async (correo) => { 
-    // MODIFICADO: Añadida la columna 'isVerified' a la selección
-    const [rows] = await db.execute('SELECT idUsuario, nombre, correo, rol, contrasena, isVerified FROM usuario WHERE correo = ?', [correo]); 
+    //  AGREGADO: imagenUrl
+    const [rows] = await db.execute('SELECT idUsuario, nombre, correo, rol, contrasena, isVerified, isPublic, imagenUrl FROM usuario WHERE correo = ?', [correo]); 
     return rows[0]; 
 };
-// src/services/user.services.js (AÑADE ESTO)
-// ... (otras funciones como findById, create, etc.) ...
 
-// Nueva función para actualizar el estado de verificación
+//  Actualizar estado de verificación
 exports.updateVerificationStatus = async (idUsuario, status) => { 
-    // Mapea true/false a 1/0 para MySQL BOOLEAN
     const statusValue = status ? 1 : 0; 
-
     const [result] = await db.execute(
         'UPDATE usuario SET isVerified = ? WHERE idUsuario = ?', 
         [statusValue, idUsuario] 
     ); 
     return result.affectedRows > 0; 
+};
+
+//  Actualizar privacidad del perfil
+exports.updatePrivacy = async (idUsuario, isPublic) => {
+    const privacyValue = isPublic ? 1 : 0;
+    const [result] = await db.execute(
+        'UPDATE usuario SET isPublic = ? WHERE idUsuario = ?',
+        [privacyValue, idUsuario]
+    );
+    return result.affectedRows > 0;
+};
+
+//  Obtener perfil completo del usuario (con más detalles)
+exports.getFullProfile = async (idUsuario) => {
+    //  AGREGADO: imagenUrl
+    const [rows] = await db.execute(
+        'SELECT idUsuario, nombre, correo, rol, isVerified, isPublic, imagenUrl FROM usuario WHERE idUsuario = ?',
+        [idUsuario]
+    );
+    return rows[0];
+};
+
+//  Actualizar avatar del usuario
+exports.updateAvatar = async (idUsuario, imagenUrl) => {
+    const [result] = await db.execute(
+        'UPDATE usuario SET imagenUrl = ? WHERE idUsuario = ?',
+        [imagenUrl, idUsuario]
+    );
+    return result.affectedRows > 0;
 };

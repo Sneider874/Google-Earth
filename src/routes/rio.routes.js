@@ -1,15 +1,29 @@
-// src/routes/rio.routes.js
+
+
 const express = require('express'); 
 const router = express.Router(); 
 const rioController = require('../controllers/rio.controller'); 
-const verifyToken = require('../middleware/auth.middleware'); // <-- Importar
 
-// Rutas Públicas (Información de consulta general)
+
+const { verifyToken, checkRole } = require('../middleware/auth.middleware'); 
+
+
+
+
 router.get('/chipalo', rioController.getChipaloInfo); 
+
+
 router.get('/combeima', rioController.getCombeimaInfo); 
+
+
 router.get('/combeima/estadisticas', rioController.getCombeimaStatistics); 
 
-// Rutas Protegidas (Acciones que modifican o ejecutan procesos)
-router.post('/combeima/analisis', verifyToken, rioController.runCombeimaAnalysis); 
+
+
+router.post('/combeima/analisis', 
+    verifyToken, 
+    checkRole([1]), 
+    rioController.runCombeimaAnalysis
+); 
 
 module.exports = router;

@@ -1,17 +1,11 @@
-// src/middleware/auth.middleware.js
 
 const jwt = require('jsonwebtoken'); 
-// Asume que dotenv.config() se llama en app.js y las variables están cargadas en process.env
 
-/**
- * Middleware para verificar la validez del JWT.
- */
+
 const verifyToken = (req, res, next) => { 
-    // Intenta obtener el token de 'x-access-token' o 'Authorization' (Bearer Token)
     const token = req.headers['x-access-token'] || req.headers['authorization']; 
     
     if (!token) { 
-        // 403 Forbidden: El cliente no proporcionó el token
         return res.status(403).json({ message: "Se requiere un token para esta acción." }); 
     } 
 
@@ -19,16 +13,45 @@ const verifyToken = (req, res, next) => {
         // Limpia el prefijo 'Bearer ' si está presente
         const tokenWithoutBearer = token.startsWith('Bearer ') ? token.slice(7) : token;
 
-        // Verifica y decodifica el token usando la clave secreta del .env
+        // Verifica y decodifica el token
         const decoded = jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET); 
         
-        // Adjunta el payload (por ejemplo, { idUsuario: 1, rol: 'admin' }) a la solicitud
-        req.user = decoded; 
+        //  Ver qué contiene el token decodificado
+        console.log('Token decodificado:', decoded);
+        
+
+        req.user = decoded;
+        
+        //  Verificar que req.user se guardó correctamente
+        console.log('req.user después de asignar:', req.user);
+        
         next(); 
     } catch (error) { 
-        // 401 Unauthorized: El token es inválido o ha expirado
+        console.error('Error al verificar token:', error.message);
         return res.status(401).json({ message: "Token inválido o expirado." }); 
     } 
 }; 
 
-module.exports = verifyToken;
+
+const checkRole = (allowedRoles) => (req, res, next) => {
+    
+    if (!req.user || !req.user.rol) {
+        console.error('checkRole: req.user o req.user.rol no existe:', req.user);
+        return res.status(403).json({ message: "Error de autorización. Rol no encontrado." });
+    }
+
+    const userRole = req.user.rol;
+    
+    console.log('Verificando rol:', { userRole, allowedRoles });
+
+    if (allowedRoles.includes(userRole)) {
+        next();
+    } else {
+        return res.status(403).json({ message: "Acceso denegado. No tienes el rol necesario para esta acción." });
+    }
+};
+
+module.exports = { 
+    verifyToken,
+    checkRole
+};

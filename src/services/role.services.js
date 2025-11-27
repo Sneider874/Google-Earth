@@ -1,4 +1,4 @@
-const db = require('../config/db.config'); // Asegúrate de que este archivo exista
+const db = require('../config/db.config'); 
 
 // Lógica de negocio para Roles
 exports.findAllRoles = async () => {
@@ -39,7 +39,5 @@ exports.deleteRole = async (id) => {
 
 exports.assignRoleToUser = async (userId, roleId) => {
   // Lógica para asignar un rol a un usuario
-  // Esto podría ser una tabla intermedia en la base de datos (ej. `user_roles`)
-  // Por ahora, solo devolveremos un mensaje de éxito.
   return { message: `Rol ${roleId} asignado al usuario ${userId} correctamente.` };
 };

@@ -2,7 +2,8 @@
 
 const express = require('express');
 const dotenv = require('dotenv');
-const cors = require('cors'); // <-- ¡CRÍTICO: Habilitar comunicación con React!
+const cors = require('cors');
+const path = require('path'); // ✅ AGREGAR ESTO
 
 // --- Rutas ---
 const authRoutes = require('./routes/auth.routes');
@@ -21,15 +22,18 @@ const app = express();
 
 // 🚨 CRÍTICO: Configuración de CORS
 app.use(cors({
-    origin: 'http://localhost:5173', // Solo permitimos explícitamente a nuestro cliente React
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
 }));
 
-app.use(express.json()); // Middleware para recibir datos JSON en el body
+app.use(express.json());
+
+// ✅ AGREGAR ESTO: Servir archivos estáticos (imágenes de perfil)
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // --- Registrar Rutas en la App ---
 app.use('/', homeRoutes);
-app.use('/api/auth', authRoutes); // Aquí es donde llega la petición de registro
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/proyectos', projectRoutes);

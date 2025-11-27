@@ -1,15 +1,54 @@
-// src/routes/role.routes.js
+
 const express = require('express'); 
 const router = express.Router(); 
 const roleController = require('../controllers/role.controller'); 
-const verifyToken = require('../middleware/auth.middleware'); // <-- Importar
+// Importamos los middlewares de autenticación y autorización
+const { verifyToken, checkRole } = require('../middleware/auth.middleware'); 
 
-// Rutas Protegidas (Idealmente solo accesibles por Admin/Usuarios con rol específico)
-router.get('/', verifyToken, roleController.listRoles); 
-router.post('/', verifyToken, roleController.createRole); 
-router.get('/:id', verifyToken, roleController.getRoleById); 
-router.put('/:id', verifyToken, roleController.updateRole); 
-router.delete('/:id', verifyToken, roleController.deleteRole); 
-router.post('/users/:id/assign_role', verifyToken, roleController.assignRoleToUser); 
+
+
+
+//  Listar todos los roles
+router.get('/', 
+    verifyToken, 
+    checkRole([1]), // Solo Administrador 
+    roleController.listRoles
+); 
+
+//  Crear un nuevo rol
+router.post('/', 
+    verifyToken, 
+    checkRole([1]), // Solo Administrador 
+    roleController.createRole
+); 
+
+//  Obtener un rol por ID
+router.get('/:id', 
+    verifyToken, 
+    checkRole([1]), // Solo Administrador 
+    roleController.getRoleById
+); 
+
+//  Actualizar un rol
+router.put('/:id', 
+    verifyToken, 
+    checkRole([1]), // Solo Administrador 
+    roleController.updateRole
+); 
+
+//  Eliminar un rol
+router.delete('/:id', 
+    verifyToken, 
+    checkRole([1]), // Solo Administrador 
+    roleController.deleteRole
+); 
+
+//  Asignar un rol a un usuario 
+
+router.post('/users/:userId/assign_role', 
+    verifyToken, 
+    checkRole([1]), // Solo Administrador 
+    roleController.assignRoleToUser
+); 
 
 module.exports = router;

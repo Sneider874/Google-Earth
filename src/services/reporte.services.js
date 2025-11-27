@@ -1,4 +1,4 @@
-// Lógica de negocio para Reportes
+
 exports.generateNewReport = async () => {
     return { message: 'Generando un nuevo reporte' };
 };

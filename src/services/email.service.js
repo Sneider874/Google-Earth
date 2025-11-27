@@ -1,7 +1,7 @@
-// src/services/email.service.js
+
 const nodemailer = require('nodemailer');
 
-// 1. Configuración del transportador de correo
+//  Configuración del transportador de correo
 const transporter = nodemailer.createTransport({
     service: process.env.EMAIL_HOST_SERVICE,
     auth: {
@@ -38,6 +38,6 @@ exports.sendVerificationEmail = async (email, token) => {
         console.log(`Correo de verificación enviado a ${email}`);
     } catch (error) {
         console.error(`Error al enviar correo a ${email}: ${error.message}`);
-        // Nota: En producción, podrías querer registrar este error o reintentar.
+       
     }
 };

@@ -1,4 +1,4 @@
-// Lógica de negocio para Resultados
+
 exports.getFinalWaterMask = async (id) => {
     return { message: `Máscara de agua final para el ID: ${id}` };
 };

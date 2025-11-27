@@ -1,45 +1,44 @@
-// src/controllers/auth.controller.js
+
 const jwt = require('jsonwebtoken'); 
 const bcrypt = require('bcryptjs'); 
 const userService = require('../services/user.services'); 
 const emailService = require('../services/email.service'); 
 
-// 🚨 FUNCIÓN FALTANTE: Maneja la lógica de inicio de sesión
+
 exports.login = async (req, res) => {
     try {
         const { correo, contrasena } = req.body;
         
-        // 1. Buscar usuario por correo
+        //  Buscar usuario por correo
         const user = await userService.findByEmail(correo);
 
         if (!user) {
             return res.status(404).json({ message: "Usuario no encontrado." });
         }
         
-        // 2. Verificar la contraseña
+        //  Verificar la contraseña
         const isPasswordValid = bcrypt.compareSync(contrasena, user.contrasena);
 
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Credenciales inválidas." });
         }
         
-        // 3. Verificar si el correo ha sido validado 
-        // 🚨 IMPORTANTE: Asume que has modificado findByEmail para seleccionar isVerified
-        // Si no lo seleccionas, esta verificación no funcionará.
-        if (user.isVerified === 0) { // O !user.isVerified
+        //  Verificar si el correo ha sido validado 
+    
+        if (user.isVerified === 0) { 
              return res.status(401).json({ 
                  message: "Tu cuenta no ha sido verificada. Por favor, revisa tu correo." 
              });
         }
 
-        // 4. Generar Token JWT (para login)
+        //  Generar Token JWT 
         const token = jwt.sign(
             { idUsuario: user.idUsuario, rol: user.rol }, 
             process.env.JWT_SECRET, 
             { expiresIn: process.env.JWT_EXPIRES }
         );
 
-        // 5. Respuesta exitosa
+        //  Respuesta exitosa
         res.status(200).json({ 
             token,
             user: { idUsuario: user.idUsuario, nombre: user.nombre, correo: user.correo, rol: user.rol } 
@@ -59,24 +58,24 @@ exports.register = async (req, res) => {
             return res.status(400).json({ message: "El correo ya está registrado." });
         }
         
-        // 1. Hashear Contraseña
+        //  Hashear Contraseña
         const hashedPassword = bcrypt.hashSync(contrasena, 10); 
         
-        // 2. Crear Usuario con isVerified = 0 (falso por defecto en la DB)
-        // **Recordatorio**: userService.create debe incluir isVerified = 0
+        //  Crear Usuario con isVerified = 0 
+        
         const newUser = await userService.create({ nombre, correo, contrasena: hashedPassword, rol });
         
-        // 3. Generar Token de Verificación (Temporal)
+        //  Generar Token de Verificación 
         const verificationToken = jwt.sign(
             { idUsuario: newUser.id, correo: newUser.correo }, 
             process.env.JWT_SECRET, 
-            { expiresIn: '1h' } // Token expira en 1 hora
+            { expiresIn: '1h' } 
         );
         
-        // 4. Enviar Correo
+        //  Enviar Correo
         await emailService.sendVerificationEmail(newUser.correo, verificationToken);
 
-        // 5. Respuesta al Cliente
+        //  Respuesta al Cliente
         res.status(201).json({ 
             message: "Usuario registrado. Por favor, revisa tu correo para verificar tu cuenta.", 
             idUsuario: newUser.id 
@@ -86,19 +85,19 @@ exports.register = async (req, res) => {
     }
 };
 
-// **FUNCIÓN: Maneja la lógica de verificación del enlace**
+
 exports.verifyEmail = async (req, res) => {
-    const { token } = req.query; // El token viene en la URL como query parameter
+    const { token } = req.query; 
     
     if (!token) {
         return res.status(400).send(" Enlace de verificación incompleto.");
     }
 
     try {
-        // 1. Verificar y decodificar el token
+        //  Verificar y decodificar el token
         const payload = jwt.verify(token, process.env.JWT_SECRET);
         
-        // 2. Marcar el usuario como verificado en la base de datos
+        //  Marcar el usuario como verificado en la base de datos
         const success = await userService.updateVerificationStatus(payload.idUsuario, true);
 
         if (success) {

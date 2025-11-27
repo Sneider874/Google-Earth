@@ -1,4 +1,4 @@
-// Lógica de negocio para los ríos
+
 exports.getChipaloInfo = async () => {
     return {
         message: 'Información del río Chipalo',
